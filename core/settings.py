@@ -31,8 +31,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    # 'django_rest_passwordreset',
 
-    'accounts'
+    'accounts.apps.AccountsConfig'
 ]
 
 REST_FRAMEWORK = {
@@ -59,6 +60,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Emailbackends
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Replace with your preferred backend
+
+EMAIL_PORT = 2525 
+EMAIL_USE_TLS = True 
+EMAIL_HOST = 'smtp.elasticemail.com'
+EMAIL_HOST_USER = 'ahmedfathhy011@gmail.com'
+EMAIL_HOST_PASSWORD = 'B57D9FBC3777FC96211498BB2C87EB53D8A9'
 
 ROOT_URLCONF = 'core.urls'
 

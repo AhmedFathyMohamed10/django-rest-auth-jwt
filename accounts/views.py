@@ -9,6 +9,8 @@ from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSeria
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+
 
 # Create your views here.
 
@@ -35,6 +37,16 @@ def login_user(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         token, created = Token.objects.get_or_create(user=user)
+        # Send welcome message to the user
+        # msg = f'Hello {user.username}, We are glad to have you here'
+        # subject = 'Welcome Message'
+        # send_mail(
+        #     subject,
+        #     msg,
+        #     'ahmedfathhy011@gmail.com',  # Sender's email address
+        #     [user.email],  # Recipient's email address
+        #     fail_silently=False,  # Set to True to suppress exceptions if email sending fails
+        # )
 
         data = {
             'user': user.username,
@@ -103,3 +115,5 @@ def change_password(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
