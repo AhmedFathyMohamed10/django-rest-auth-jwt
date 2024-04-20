@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework import generics
 
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSerializer
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -57,7 +57,7 @@ def logout_user(request):
         data = {'Error': 'You are already logged out'}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-   
+
 class ListUsers(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
@@ -74,3 +74,32 @@ class GetUser(generics.RetrieveAPIView):
     permission_classes = [
         IsAuthenticated
     ]
+
+from django.contrib.auth import update_session_auth_hash
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    if request.method == 'POST':
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if user.check_password(request.data['old_password']):
+                # Check for new password isn't the same old password
+                if request.data['new_password'] == request.data['old_password']:
+                    return Response({'status': 'New password cannot be the same as old password'}, status=status.HTTP_400_BAD_REQUEST) 
+                # Check if the new password is match with new password2
+                if request.data['new_password'] != request.data['new_password2']:
+                    return Response({'status': 'New passwords do not match together!'}, status=status.HTTP_400_BAD_REQUEST)
+                # Set the new password
+                user.set_password(request.data['new_password'])
+                user.save()
+                # Update the session
+                update_session_auth_hash(request, user)
+                # Return a success response
+                return Response({'status': 'Password changed successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
